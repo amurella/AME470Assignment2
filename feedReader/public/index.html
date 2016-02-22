@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> Simple JS Eval</title>
+  <script src='script.js'> </script>
+  <script>
+ 
+ var theUser = "test";
+ var allSubs = null;
+ var allPosts = null;
+
+ var urlLink = [];
+ var sum = [];
+ var names = [];
+
+
+    var startUp = function() 
+    {
+        loadMySubs();
+    }
+
+    var loadMySubs = function()
+    {
+      var url = "./listSubs?user=" + theUser;
+      console.log(url);
+      loadURL(url, function(data){
+        var mySubs = JSON.parse(data);
+        allSubs = mySubs;
+        if(mySubs.length == 0){
+          document.getElementById("myFeedList").innerHTML = "No subscriptions"
+        }
+        else{
+          var markUp = "";
+          for(var i = 0; i < mySubs.length; i++)
+          {
+            var aFeed = mySubs[i];
+            urlLink[i] = aFeed.link;
+            markUp += "<a href='javascript:postsInSub(" + i + ")' class = 'listItem'>" + aFeed.id + " : " + aFeed.link + "</a>";
+            document.getElementById("feedDetails").innerHTML = "";
+          }
+          document.getElementById("myFeedList").innerHTML = markUp;
+        }
+      });
+      
+    }
+
+    var postsInSub = function(position)
+    {
+      names = [];
+      var url = "./getAllPosts?link=" + urlLink[position];
+      console.log(url);
+
+      loadURL(url, function(data) {
+        var posts = JSON.parse(data);
+        var postNumber = posts.feed.entry.length
+        allPosts = posts;
+        if(posts.length != 0) {
+          for(var i = 0; i < postNumber; i++)
+          {
+            var aFeed = posts;
+            if(JSON.stringify(aFeed.feed.entry[i].summary) == null) {
+              var nameLabel = JSON.stringify(aFeed.feed.entry[i].title.label);
+              console.log(nameLabel);
+              sum[i] = "No description available: " + JSON.stringify(aFeed.feed.entry[i].title.label); 
+
+            }
+            else {
+              sum[i] = JSON.stringify(aFeed.feed.entry[i].summary.label);
+            }
+
+            names.push(("<a href = javascript:descriptionSubs(" + i + ")>" + JSON.stringify(aFeed.feed.entry[i].title.label) + "</a>"));
+          }
+
+          document.getElementById("feedDetails").innerHTML = "";
+          document.getElementById("currFeedList").innerHTML = names;
+        } 
+        else {
+          alert("There are no posts available.");
+        }
+      });
+    }
+
+    var descriptionSubs = function(position)
+    {
+      document.getElementById("feedDetails").innerHTML = sum[position];
+    }
+
+    var addFeed = function()
+    {
+      var link = prompt("Enter the subscription link: ");
+      if(link != null)
+      {
+        var url = "./addOrEditSub?id= " + allSubs.length + "&link=" + link + "&date=" + "&user=" + theUser;
+        loadURL(url, function(data) {
+        });
+        location.reload();
+      }
+      else
+      {
+        alert("Does not work");
+      }
+    }
+
+  </script>
+  <style>
+  p{
+      text-align: center;
+  }
+  body{
+    margin: 0px;
+  }
+
+  a:link {
+    text-decoration: underline; color: green;
+  }
+
+  #myFeedWrapper, #currFeedWrapper{
+    display: inline-block;
+    width: 25%;
+    vertical-align: top;
+    color: purple;
+    background: #ddd;
+    min-height: 100%;
+  }
+  #selFeedWrapper{
+    display: inline-block;
+    width: 48%;
+    vertical-align: top;
+    color:blue;
+    min-height: 100%;
+  }
+  </style>
+</head>
+
+<body onload = 'startUp()'> 
+  <div id='myFeedWrapper'>
+    <h1> My Feeds </h1>
+    <a href='javascript:addFeed()'> Add New </a>
+    <div id='myFeedList'> </div>
+  </div>
+  <div id='currFeedWrapper'>
+    <h1> </h1>
+    <div id='currFeedList'> </div>
+ </div>
+  <div id='selFeedWrapper'> 
+    <h1> </h1>
+    <div id='feedDetails' style="color:#00FFFF;"> </div>
+  </div>
+</body>
+</html>
